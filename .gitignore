@@ -1,0 +1,7 @@
+Bootloader/MDK-ARM/.vscode/*
+Bootloader/MDK-ARM/Bootloader/*
+!Bootloader/MDK-ARM/Bootloader/Bootloader.hex
+APP_normal/MDK-ARM/.vscode/*
+APP_normal/MDK-ARM/Bootloader/*
+!APP_normal/MDK-ARM/APP_normal/APP_normal.hex
+!APP_normal/MDK-ARM/APP_normal/APP_normal.bin
