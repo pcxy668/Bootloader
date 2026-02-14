@@ -1,124 +1,139 @@
-#include "w25q16.h"
+#include "Int_w25q16.h"
 
-void W25Q16_Init(void)
+void Int_W25Q16_Select(void)
 {
-    SPI_Init();
+    HAL_GPIO_WritePin(W25Q16_CS_GPIO_Port, W25Q16_CS_Pin, GPIO_PIN_RESET);
 }
 
-void W25Q16_ReadID(uint8_t *mid, uint16_t *did)
+void Int_W25Q16_Deselect(void)
 {
-    SPI_Start();
-    SPI_Swap(0x9f);
-    *mid = SPI_Swap(0xff);
-    *did = SPI_Swap(0xff) << 8;
-    *did = SPI_Swap(0xff);
-    SPI_Stop();
+    HAL_GPIO_WritePin(W25Q16_CS_GPIO_Port, W25Q16_CS_Pin, GPIO_PIN_SET);
 }
 
-void W25Q16_WriteEnable(void)
+void Int_W25Q16_ReadID(uint8_t *mid, uint16_t *did)
 {
-    SPI_Start();
-    SPI_Swap(0x06);
-    SPI_Stop();
+    uint8_t cmd = 0x9F;
+    uint8_t buf[2] = {0};
+    Int_W25Q16_Select();
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    HAL_SPI_Receive(&hspi2, mid, 1, 1000);
+    HAL_SPI_Receive(&hspi2, buf, 2, 1000);
+    Int_W25Q16_Deselect();
+
+    *did = buf[0] << 8 | buf[1];
 }
 
-void W25Q16_WriteDisable(void)
+void Int_W25Q16_WriteEnable(void)
 {
-    SPI_Start();
-    SPI_Swap(0x04);
-    SPI_Stop();
+    uint8_t cmd = 0x06;
+    Int_W25Q16_Select();
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    Int_W25Q16_Deselect();
 }
 
-void W25Q16_WaitNotBusy(void)
+void Int_W25Q16_WriteDisable(void)
 {
-    SPI_Start();
-    SPI_Swap(0x05);
-    while (SPI_Swap(0xff) & 0x01)
+    uint8_t cmd = 0x04;
+    Int_W25Q16_Select();
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    Int_W25Q16_Deselect();
+}
+
+void Int_W25Q16_WaitNotBusy(void)
+{
+    uint8_t buf = 0, cmd = 0x05;
+    Int_W25Q16_Select();
+    while (1)
     {
+        HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+        HAL_SPI_Receive(&hspi2, &buf, 1, 1000);
+        if ((buf & 0x01) == 0)
+        {
+            break;
+        }
     }
-    SPI_Stop();
+    Int_W25Q16_Deselect();
 }
 
-void W25Q16_SectorEarse(uint8_t block, uint8_t sector)
+void Int_W25Q16_PageWrite(uint8_t block, uint8_t sector, uint8_t page, uint8_t innerAddr, uint8_t *data, uint8_t len)
 {
-    W25Q16_WaitNotBusy();
-    W25Q16_WriteEnable();
-    SPI_Start();
-    SPI_Swap(0x20);
-    SPI_Swap(block);
-    SPI_Swap(sector << 4);
-    SPI_Swap(0x00);
-    SPI_Stop();//务必要先给个片选高电平才可生效
-    W25Q16_WriteDisable();
-}
-void W25Q16_PageWrite(uint8_t block, uint8_t sector, uint8_t page, uint8_t *data, uint8_t len)
-{
-    W25Q16_WaitNotBusy();
-    W25Q16_WriteEnable();
-    SPI_Start();
-    SPI_Swap(0x02);
-    SPI_Swap(block);
-    SPI_Swap((sector << 4) + page);
-    SPI_Swap(0x00);
+    uint8_t cmd = 0x02;
+    uint8_t tmp = (sector << 4) | page;
+
+    Int_W25Q16_WaitNotBusy();
+    Int_W25Q16_WriteEnable();
+    Int_W25Q16_Select();
+
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &block, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &tmp, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &innerAddr, 1, 1000);
+
     for (uint8_t i = 0; i < len; i++)
     {
-        SPI_Swap(data[i]);
+        HAL_SPI_Transmit(&hspi2, data + i, 1, 1000);
     }
-    SPI_Stop();
-    W25Q16_WriteDisable();
+
+    Int_W25Q16_Deselect();
+    Int_W25Q16_WriteDisable();
 }
 
-void W25Q16_RandomWrite(uint32_t addr, uint8_t *data, uint8_t len)
+void Int_W25Q16_ReadData(uint8_t block, uint8_t sector, uint8_t page, uint8_t innerAddr, uint8_t *buffer, uint16_t len)
 {
-    W25Q16_WaitNotBusy();
-    W25Q16_WriteEnable();
-    SPI_Start();
-    SPI_Swap(0x02);
-    SPI_Swap((addr >> 16) & 0xff);
-    SPI_Swap((addr >> 8) & 0xff);
-    SPI_Swap(addr & 0xff);
-    for (uint8_t i = 0; i < len; i++)
-    {
-        SPI_Swap(data[i]);
-    }
-    SPI_Stop();
-    W25Q16_WriteDisable();
+    uint8_t cmd = 0x03,tmp = (sector << 4) | page;
+
+    Int_W25Q16_WaitNotBusy();
+    Int_W25Q16_Select();
+
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &block, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &tmp, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &innerAddr, 1, 1000);
+
+    HAL_SPI_Receive(&hspi2, buffer, len, 1000);
+
+    Int_W25Q16_Deselect();
 }
 
-void W25Q16_ReadData(uint8_t block, uint8_t sector, uint8_t page, uint8_t innerAddr, uint8_t *buffer, uint16_t len)
+void Int_W25Q16_SectorEarse(uint8_t block, uint8_t sector)
 {
-    W25Q16_WaitNotBusy();
-    SPI_Start();
-    SPI_Swap(0x03);
-    SPI_Swap(block);
-    SPI_Swap((sector << 4) + page);
-    SPI_Swap(innerAddr);
-    for (uint16_t i = 0; i < len; i++)
-    {
-        buffer[i] = SPI_Swap(0xff);
-    }
-    SPI_Stop();
+    uint8_t cmd = 0x20, tmp[2] = {sector << 4, 0x00};
+    Int_W25Q16_WaitNotBusy();
+    Int_W25Q16_WriteEnable();
+
+    Int_W25Q16_Select();
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &block, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, tmp, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, tmp + 1, 1, 1000);
+    Int_W25Q16_Deselect();
+
+    Int_W25Q16_WriteDisable();
 }
 
-void W25Q16_ChipEarse()
+void Int_W25Q16_BlockEarse(uint8_t block)
 {
-    W25Q16_WaitNotBusy();
-    W25Q16_WriteEnable();
-    SPI_Start();
-    SPI_Swap(0xc7);
-    SPI_Stop();
-    W25Q16_WriteDisable();
+    uint8_t cmd = 0xD8, tmp = 0;
+    Int_W25Q16_WaitNotBusy();
+    Int_W25Q16_WriteEnable();
+
+    Int_W25Q16_Select();
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &block, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &tmp, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &tmp, 1, 1000);
+    Int_W25Q16_Deselect();
+
+    Int_W25Q16_WriteDisable();
 }
 
-void W25Q16_BlockEarse(uint8_t block)
+void Int_W25Q16_ChipEarse()
 {
-    W25Q16_WaitNotBusy();
-    W25Q16_WriteEnable();
-    SPI_Start();
-    SPI_Swap(0xD8);
-    SPI_Swap(block);
-    SPI_Swap(0x00);
-    SPI_Swap(0x00);
-    SPI_Stop();
-    W25Q16_WriteDisable();
+    uint8_t cmd = 0xC7;
+    Int_W25Q16_WaitNotBusy();
+    Int_W25Q16_WriteEnable();
+    Int_W25Q16_Select();
+    HAL_SPI_Transmit(&hspi2, &cmd, 1, 1000);
+    Int_W25Q16_Deselect();
+    Int_W25Q16_WriteDisable();
 }

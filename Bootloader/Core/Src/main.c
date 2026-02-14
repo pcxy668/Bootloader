@@ -24,7 +24,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "Int_w25q16.h"
+#include "Com_Debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -90,7 +91,19 @@ int main(void)
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  uint8_t mid;
+  uint16_t did;
+  Int_W25Q16_ReadID(&mid, &did);
+  debug_printf("mid: %02X, did: %04X\n", mid, did);
 
+  uint8_t buf[16]= {0};
+  Int_W25Q16_PageWrite(2,3,4,5,"This is my first test",21);
+  Int_W25Q16_ReadData(2,3,4,5,buf,21);
+  debug_printf("%s\n",buf);
+
+  Int_W25Q16_SectorEarse(2,3);
+  Int_W25Q16_ReadData(2,3,4,5,buf,21);
+  debug_printf("%s\n",buf);  
   /* USER CODE END 2 */
 
   /* Infinite loop */

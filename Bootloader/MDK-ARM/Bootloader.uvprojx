@@ -189,7 +189,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <nSecure>0</nSecure>
@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103xE</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\Application;..\Interface</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc;../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F1xx/Include;../Drivers/CMSIS/Include;..\Application;..\Interface;..\Common</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -516,6 +516,51 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Application</GroupName>
+          <Files>
+            <File>
+              <FileName>App_bootloader.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Application\App_bootloader.c</FilePath>
+            </File>
+            <File>
+              <FileName>App_bootloader.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Application\App_bootloader.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Interface</GroupName>
+          <Files>
+            <File>
+              <FileName>Int_w25q16.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Interface\Int_w25q16.c</FilePath>
+            </File>
+            <File>
+              <FileName>Int_w25q16.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Interface\Int_w25q16.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Common</GroupName>
+          <Files>
+            <File>
+              <FileName>Com_Debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Common\Com_Debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>Com_Debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Common\Com_Debug.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
@@ -534,5 +579,14 @@
     </components>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>Bootloader</LayName>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>
