@@ -24,7 +24,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Int_w25q16.h"
+#include "App_bootloader.h"
 #include "Com_Debug.h"
 /* USER CODE END Includes */
 
@@ -91,6 +91,8 @@ int main(void)
   MX_SPI2_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  /*   
   uint8_t mid;
   uint16_t did;
   Int_W25Q16_ReadID(&mid, &did);
@@ -103,7 +105,13 @@ int main(void)
 
   Int_W25Q16_SectorEarse(2,3);
   Int_W25Q16_ReadData(2,3,4,5,buf,21);
-  debug_printf("%s\n",buf);  
+  debug_printf("%s\n",buf);   
+  */
+
+  App_Bootloader_CheckUpdate();
+  App_Bootloader_Update();
+  App_Bootloader_JumpToApp(APP_START_ADDR_FLASH);
+  
   /* USER CODE END 2 */
 
   /* Infinite loop */
