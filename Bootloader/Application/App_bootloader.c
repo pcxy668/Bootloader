@@ -17,6 +17,7 @@
 #include "Com_Debug.h"
 
 Bootloader_Status_Type Bootloader_Status = STATUS_INIT;
+uint8_t buff[FLASH_PAGE_SIZE] = {0};
 
 /**
  * @brief 检查是否需要更新APP程序
@@ -59,7 +60,9 @@ void App_Bootloader_EarseFlash(void)
     EraseInitStruct.NbPages = (app_size / FLASH_PAGE_SIZE) + 1;
 
     uint32_t PageError = 0;
-    HAL_FLASHEx_Erase(&EraseInitStruct, &PageError);
+    HAL_StatusTypeDef res = HAL_FLASHEx_Erase(&EraseInitStruct, &PageError);
+
+    debug_printf("EraseInitStruct.NbPages=%d res=%d\n",EraseInitStruct.NbPages,res);
 
     HAL_FLASH_Lock();
 }
@@ -69,11 +72,10 @@ void App_Bootloader_EarseFlash(void)
  */
 void App_Bootloader_WriteFlash(void)
 {
-    uint8_t buff[FLASH_PAGE_SIZE] = {0};
     uint16_t app_size = 0;
     Int_W25Q16_ReadData(0, 1, 0, 1, buff, 2);
     app_size = buff[0] + (buff[1] << 8);
-
+    
     uint16_t remain = app_size, written_size = 0, data = 0;
 
     HAL_FLASH_Unlock();

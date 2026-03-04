@@ -1,0 +1,2 @@
+APP_Update 为LED1&2流水灯效果
+APP_Normal 为LED1&2同亮同灭

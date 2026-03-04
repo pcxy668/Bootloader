@@ -92,24 +92,11 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  /*   
-  uint8_t mid;
-  uint16_t did;
-  Int_W25Q16_ReadID(&mid, &did);
-  debug_printf("mid: %02X, did: %04X\n", mid, did);
-
-  uint8_t buf[16]= {0};
-  Int_W25Q16_PageWrite(2,3,4,5,"This is my first test",21);
-  Int_W25Q16_ReadData(2,3,4,5,buf,21);
-  debug_printf("%s\n",buf);
-
-  Int_W25Q16_SectorEarse(2,3);
-  Int_W25Q16_ReadData(2,3,4,5,buf,21);
-  debug_printf("%s\n",buf);   
-  */
-
+  debug_printf("Into bootloader\n");
   App_Bootloader_CheckUpdate();
   App_Bootloader_Update();
+  HAL_Delay(1000);
+  debug_printf("jump to app\n");
   App_Bootloader_JumpToApp(APP_START_ADDR_FLASH);
   
   /* USER CODE END 2 */
